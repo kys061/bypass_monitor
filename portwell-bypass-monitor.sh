@@ -444,7 +444,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							else
@@ -456,7 +456,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							fi
@@ -473,7 +473,7 @@ function check_bumps
 										stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 										for ((i=0; i<${#stm_process_num[@]}; i++));
 										do
-											kill -9 ${stm_process_num[$i]}
+											reboot
 										done
 									fi
 								else
@@ -484,7 +484,7 @@ function check_bumps
 										stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 										for ((i=0; i<${#stm_process_num[@]}; i++));
 										do
-											kill -9 ${stm_process_num[$i]}
+											reboot
 										done
 									fi
 								fi
@@ -504,7 +504,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							else
@@ -515,7 +515,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							fi
@@ -533,7 +533,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							else
@@ -544,7 +544,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							fi
@@ -570,7 +570,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							else
@@ -581,7 +581,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							fi
@@ -598,7 +598,7 @@ function check_bumps
 										stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 										for ((i=0; i<${#stm_process_num[@]}; i++));
 										do
-											kill -9 ${stm_process_num[$i]}
+											reboot
 										done
 									fi
 								else
@@ -609,7 +609,7 @@ function check_bumps
 										stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 										for ((i=0; i<${#stm_process_num[@]}; i++));
 										do
-											kill -9 ${stm_process_num[$i]}
+											reboot
 										done
 									fi
 								fi
@@ -629,7 +629,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							else
@@ -640,7 +640,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							fi
@@ -658,7 +658,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							else
@@ -669,7 +669,7 @@ function check_bumps
 									stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
 									for ((i=0; i<${#stm_process_num[@]}; i++));
 									do
-										kill -9 ${stm_process_num[$i]}
+										reboot
 									done
 								fi
 							fi
