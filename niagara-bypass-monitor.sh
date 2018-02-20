@@ -785,6 +785,7 @@ if [ $stm_operstatus != "up" ]; then
         #       /opt/stm/target/enable_bypass.sh
         check_bumps
 else
+	### first bump check
         if [ "$bump1_operstatus" == "up" ]; then
                 if [ "$bump_type" == "cooper" ]; then
                         if [ -d /sys/class/bypass/g3bp0 ]; then
@@ -832,55 +833,57 @@ else
                 fi
             fi
         fi
-
-        if [ "$bump2_operstatus" == "up" ]; then
-            if [ "$bump2_type" == "cooper" ]; then
-                    if [ -d /sys/class/bypass/g3bp1 ]; then
-                            cd /sys/class/bypass/g3bp1
-                            bypass_status=$(cat bypass)
-                            #                       echo "Bypass Status"
-                            #                       echo $bypass_status
-                            if [ "$bypass_status" != "n" ]; then
-                            echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-                            echo 1 > func
-                            echo n > bypass
+	### second bump check
+	if [ $realint_count == "4" ]; then
+		if [ "$bump2_operstatus" == "up" ]; then
+		    if [ "$bump2_type" == "cooper" ]; then
+			    if [ -d /sys/class/bypass/g3bp1 ]; then
+				    cd /sys/class/bypass/g3bp1
+				    bypass_status=$(cat bypass)
+				    #                       echo "Bypass Status"
+				    #                       echo $bypass_status
+				    if [ "$bypass_status" != "n" ]; then
+				    echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				    echo 1 > func
+				    echo n > bypass
+				    fi
 			    fi
-                    fi
-            else
-                    if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
-                            cd /sys/class/niagara/niagara0/0
-                            bypass_status=$(cat relay_status)
-                            #                       echo "Bypass Status"
-                            #                       echo "Bypass Status : "$bypass_status"; 0 is Normal, 2 is Bypass" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-			if [ "$bypass_status" != "2" ]; then
-                           echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-                            #                           echo 1 > func
-                            #echo 0 > bypass1
-                            ## mode enable d2 mode -> active : bypass 
-                            sudo niagara_util -d2 0
-                            ## hb enable : active
-                            sudo niagara_util -a 0
-                            ## hb disable : bypass
-                            #sudo niagara_util -r 0
-			fi
+		    else
+			    if [ -e /sys/class/niagara/niagara1/0/relay_status ]; then
+				    cd /sys/class/niagara/niagara1/0
+				    bypass_status=$(cat relay_status)
+				    #                       echo "Bypass Status"
+				    #                       echo "Bypass Status : "$bypass_status"; 0 is Normal, 2 is Bypass" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				if [ "$bypass_status" != "2" ]; then
+				   echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				    #                           echo 1 > func
+				    #echo 0 > bypass1
+				    ## mode enable d2 mode -> active : bypass 
+				    sudo niagara_util -d2 0
+				    ## hb enable : active
+				    sudo niagara_util -a 0
+				    ## hb disable : bypass
+				    #sudo niagara_util -r 0
+				fi
 
-                    fi
-            fi
-        else
-            if [ "$bump2_type" == "cooper" ]; then
-                    if [ $bitw2_cooper_bypass != "b" ]; then
-                            echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-                            #/opt/stm/target/enable_bypass.sh bump2
-                            #check_bumps
-                    fi
-            else
-                    if [ $bitw2_fiber_bypass != "2" ]; then
-                            echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-                            sudo niagara_util -r 0
-                            check_bumps
-                    fi
-            fi
-        fi
+			    fi
+		    fi
+		else
+		    if [ "$bump2_type" == "cooper" ]; then
+			    if [ $bitw2_cooper_bypass != "b" ]; then
+				    echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				    #/opt/stm/target/enable_bypass.sh bump2
+				    #check_bumps
+			    fi
+		    else
+			    if [ $bitw2_fiber_bypass != "1" ]; then
+				    echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				    sudo niagara_util -r 0
+				    check_bumps
+			    fi
+		    fi
+		fi
+	fi
 fi
 
 
