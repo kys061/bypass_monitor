@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 #
 #####################################
 # Copyright (c) 2018 Saisei         #
@@ -78,7 +78,8 @@ do
                         fi
                         stm_status='true'
                         echo 'virt,real' > /etc/stm/system_virt_real_device.csv
-                        if [ $model_type == "tiny" ]; then
+                        if [ $bump_count == 4 ]; then
+                            if [ $model_type == "tiny" ]; then
                                 soc_a=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep External |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f1 |cut -d"." -f1)
                                 soc_b=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep External |awk '{print $10}' |awk 'FNR == 2 {print}'|rev |cut -d":" -f1 |cut -d"." -f1)
                                 soc_c=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep Internal |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f1 |cut -d"." -f1)
@@ -108,7 +109,7 @@ do
                                                 echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep Internal |awk '{print $1 "," $10; fflush()}' |awk 'FNR == 1 {print}' >> /etc/stm/system_virt_real_device.csv
                                         fi
                                 fi
-                        else
+                            else
                                 eth_a=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep External |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f1 |cut -d"." -f1) # 20
                                 eth_b=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep External |awk '{print $10}' |awk 'FNR == 2 {print}'|rev |cut -d":" -f1 |cut -d"." -f1) # 40
                                 eth_c=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep Internal |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f1 |cut -d"." -f1) # 30
@@ -138,6 +139,15 @@ do
                                                 echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep Internal |awk '{print $1 "," $10; fflush()}' |awk 'FNR == 1 {print}' >> /etc/stm/system_virt_real_device.csv
                                         fi
                                 fi
+                            fi
+                        else
+                            if [ $model_type == "tiny" ]; then
+                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep External |awk '{print $1 "," $10; fflush()}' |awk 'FNR == 1 {print}' >> /etc/stm/system_virt_real_device.csv
+                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep Internal |awk '{print $1 "," $10; fflush()}' |awk 'FNR == 1 {print}' >> /etc/stm/system_virt_real_device.csv
+                            else
+                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep External |awk '{print $1 "," $10; fflush()}' |awk 'FNR == 1 {print}' >> /etc/stm/system_virt_real_device.csv
+                                echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep Internal |awk '{print $1 "," $10; fflush()}' |awk 'FNR == 1 {print}' >> /etc/stm/system_virt_real_device.csv
+                            fi                        
                         fi
                 fi
         fi
@@ -245,24 +255,33 @@ function check_bump_type
         # check bump type
         if [ $version == "V7.1" ]; then
                 real_port_1_pci=$(cat /etc/stm/system_devices.csv |grep "$real_port_1\$" |awk -F"," '{print $2}' |cut -d":" -f2,3)
+		if [ $realint_count == "4" ]; then
                 real_port_3_pci=$(cat /etc/stm/system_devices.csv |grep "$real_port_3\$" |awk -F"," '{print $2}' |cut -d":" -f2,3)
+		fi
         else
                 real_port_1_pci=$(cat /etc/stm/devices.csv |grep "$real_port_1" |awk -F"," '{print $3}' |cut -d"\"" -f2 |cut -d":" -f2,3)
-                real_port_2_pci=$(cat /etc/stm/devices.csv |grep "$real_port_2" |awk -F"," '{print $3}' |cut -d"\"" -f2 |cut -d":" -f2,3)
+		if [ $realint_count == "4" ]; then
+                real_port_3_pci=$(cat /etc/stm/devices.csv |grep "$real_port_3" |awk -F"," '{print $3}' |cut -d"\"" -f2 |cut -d":" -f2,3)
+		fi
         fi
 
         bump_type=$(lspci |grep "$real_port_1_pci" |grep SFP+ -o)
-        bump2_type=$(lspci |grep "$real_port_3_pci" |grep SFP+ -o)
+	bump2_type=$(lspci |grep "$real_port_3_pci" |grep SFP+ -o)
         if [ ! -z $bump_type ]; then
                 bump_type="fiber"
         else
                 bump_type="cooper"
         fi
-        if [ ! -z $bump2_type ]; then
-                bump2_type="fiber"
-        else
-                bump2_type="cooper"
-        fi
+
+	if [ $realint_count == "4" ]; then
+		if [ ! -z $bump2_type ]; then
+			bump2_type="fiber"
+		else
+			bump2_type="cooper"
+		fi
+	else
+		bump2_type="None"
+	fi
 }
 #
 # check interface is enabled
@@ -494,7 +513,7 @@ function check_bumps
                                                 fi
                                         fi
                                 else
-                                        if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass0 ]; then
+                                        if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
                                                 if [ "$bitw_port_1_enable" == "Enabled" ] && [ "$bitw_port_2_enable" == "Enabled" ]; then
                                                         if [ $model_type == "tiny" ]; then
                                                                 # check interface thread hang
@@ -523,7 +542,7 @@ function check_bumps
                                                         fi
                                                 fi
                                         fi
-                                        if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass1 ]; then
+                                        if [ -e /sys/class/niagara/niagara1/0/relay_status ]; then
                                                 if [ "$bitw2_port_1_enable" == "Enabled" ] && [ "$bitw2_port_2_enable" == "Enabled" ]; then
                                                         if [ $model_type == "tiny" ]; then
                                                                 # check interface thread hang
@@ -619,7 +638,7 @@ function check_bumps
                                                 fi
                                         fi
                                 else
-                                        if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass0 ]; then
+                                        if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
                                                 if [ "$bitw_port_1_enable" == "Enabled" ] && [ "$bitw_port_2_enable" == "Enabled" ]; then
                                                         if [ $model_type == "tiny" ]; then
                                                                 # check interface thread hang
@@ -648,7 +667,7 @@ function check_bumps
                                                         fi
                                                 fi
                                         fi
-                                        if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass1 ]; then
+                                        if [ -e /sys/class/niagara/niagara1/0/relay_status ]; then
                                                 if [ "$bitw2_port_1_enable" == "Enabled" ] && [ "$bitw2_port_2_enable" == "Enabled" ]; then
                                                         if [ $model_type == "tiny" ]; then
                                                                 # check interface thread hang
@@ -780,14 +799,13 @@ else
                                 fi
                         fi
                 else
-                        if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass0 ]; then
-                                cd /sys/class/misc/caswell_bpgen2/slot0/
-                                bypass_status=$(cat bypass0)
+                        if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
+                                cd /sys/class/niagara/niagara0/0/
+                                bypass_status=$(cat relay_status)
                                 #                       echo "Bypass Status"
                                 #                       echo "Bypass Status : "$bypass_status"; 0 is Normal, 2 is Bypass" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-                                if [ "$bypass_status" != "0" ]; then
+                                if [ "$bypass_status" != "2" ]; then
                                 echo "Disabling bypass on bump1" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-                                fi
                                 #                           echo 1 > func
                                 #echo 0 > bypass0
                                 ## mode enable d2 mode -> active : bypass 
@@ -796,6 +814,7 @@ else
                                 sudo niagara_util -a 0
                                 ## hb disable
                                 #sudo niagara_util -r 0
+                                fi
                         fi
                 fi
         else
@@ -828,14 +847,13 @@ else
 			    fi
                     fi
             else
-                    if [ -e /sys/class/misc/caswell_bpgen2/slot0/bypass1 ]; then
-                            cd /sys/class/misc/caswell_bpgen2/slot0/
-                            bypass_status=$(cat bypass1)
+                    if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
+                            cd /sys/class/niagara/niagara0/0
+                            bypass_status=$(cat relay_status)
                             #                       echo "Bypass Status"
                             #                       echo "Bypass Status : "$bypass_status"; 0 is Normal, 2 is Bypass" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-			if [ "$bypass_status" != "0" ]; then
+			if [ "$bypass_status" != "2" ]; then
                            echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-			fi
                             #                           echo 1 > func
                             #echo 0 > bypass1
                             ## mode enable d2 mode -> active : bypass 
@@ -844,6 +862,7 @@ else
                             sudo niagara_util -a 0
                             ## hb disable : bypass
                             #sudo niagara_util -r 0
+			fi
 
                     fi
             fi
