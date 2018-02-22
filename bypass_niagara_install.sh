@@ -69,4 +69,13 @@ if [ ! -z "$is_fiber" ]; then
   sed -i '14a\\sudo insmod /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk/module/niagara.ko' /etc/rc.local
   sed -i '14a\\## module enable' /etc/rc.local
 
+  if [ ! -e /etc/init.d/bypass_niagara_enable.sh ]; then
+	  cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_niagara_enable.sh /etc/init.d/.
+	  cd /etc/rc6.d
+	  ln -s ../bypass_niagara_enable.sh K20bypass_niagara_enable.sh
+
+	  cd /etc/rc0.d
+	  ln -s ../bypass_niagara_enable.sh K20bypass_niagara_enable.sh
+
+  fi
 fi
