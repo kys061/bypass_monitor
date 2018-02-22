@@ -46,20 +46,6 @@ do
       fi
       stm_status='true'
       echo 'virt,real' > /etc/stm/system_virt_real_device.csv
-      ## change active
-#sudo bpctl_start
-### module enable
-#sudo insmod /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk/module/niagara.ko
-### mode enable d2 mode -> active : bypass
-#sudo niagara_util -d2 0
-#sudo niagara_util -d2 1
-### hb enable
-##sudo niagara_util -a 0
-### hb disable
-#sudo niagara_util -r 0
-#sudo niagara_util -r 1
-### LLCF enable
-#sudo niagara_util -Q     
       if [ $model_type == "tiny" ]; then
         echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |awk '{print $1 "," $11; fflush()}' >> /etc/stm/system_virt_real_device.csv
       else
@@ -279,6 +265,7 @@ function check_bump_type
 
   bump_type=$(lspci |grep "$real_port_1_pci" |grep SFP+ -o)
   bump2_type=$(lspci |grep "$real_port_3_pci" |grep SFP+ -o)
+  int_type=$(lspci |grep "$real_port_1_pci" |grep QLogic -o)
   if [ ! -z $bump_type ]; then
     bump_type="fiber"
   else
@@ -767,6 +754,9 @@ function check_bumps
 echo "=== Start portwell-bypass-monitor === " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
 get_real_ports
 check_bump_type
+if [ "$int_type" == "QLogic"  ]; then
+  echo "It's not installed niagara bypass network card!!! Please install niagara bypass cards" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+else
 if [ "$bump_type" == "fiber" ]; then
   if [ -d /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk ]; then
     cd /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk/module
@@ -941,3 +931,4 @@ do
   echo "===========================" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
   sleep 10
 done
+fi
