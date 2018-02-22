@@ -46,6 +46,7 @@ do
       fi
       stm_status='true'
       echo 'virt,real' > /etc/stm/system_virt_real_device.csv
+      model_type=$(echo 'show parameter model' | sudo /opt/stm/target/pcli/stm_cli.py admin:admin@localhost |cut -d"=" -f2 | sed -e 's/^[[:space:]]*//')
       if [ $model_type == "tiny" ]; then
         echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |awk '{print $1 "," $11; fflush()}' >> /etc/stm/system_virt_real_device.csv
       else
