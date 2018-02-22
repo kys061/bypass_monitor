@@ -266,7 +266,7 @@ function check_bump_type
 
   bump_type=$(lspci |grep "$real_port_1_pci" |grep SFP+ -o)
   bump2_type=$(lspci |grep "$real_port_3_pci" |grep SFP+ -o)
-  int_type=$(lspci |grep "$real_port_1_pci" |grep QLogic -o)
+  int_type=$(lspci -m |grep "$real_port_1_pci" |grep QLogic -o)
   if [ ! -z $bump_type ]; then
     bump_type="fiber"
   else
