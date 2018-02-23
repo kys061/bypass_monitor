@@ -79,10 +79,10 @@ do
       echo 'virt,real' > /etc/stm/system_virt_real_device.csv
       if [ $bump_count == 4 ]; then
         if [ $model_type == "tiny" ]; then
-          soc_a=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep External |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f1 |cut -d"." -f1)
-          soc_b=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep External |awk '{print $10}' |awk 'FNR == 2 {print}'|rev |cut -d":" -f1 |cut -d"." -f1)
-          soc_c=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep Internal |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f1 |cut -d"." -f1)
-          soc_d=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep Internal |awk '{print $10}' |awk 'FNR == 2 {print}'|rev |cut -d":" -f1 |cut -d"." -f1)
+          soc_a=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep External |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f2)
+          soc_b=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep External |awk '{print $10}' |awk 'FNR == 2 {print}'|rev |cut -d":" -f2)
+          soc_c=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep Internal |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f2)
+          soc_d=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep Internal |awk '{print $10}' |awk 'FNR == 2 {print}'|rev |cut -d":" -f2)
           # compare pci value of interface
           if [ $soc_a -lt $soc_b ]; then
             echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep External |awk '{print $1 "," $10; fflush()}' |awk 'FNR == 1 {print}' >> /etc/stm/system_virt_real_device.csv
@@ -109,10 +109,10 @@ do
             fi
           fi
         else
-          eth_a=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep External |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f1 |cut -d"." -f1) # 20
-          eth_b=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep External |awk '{print $10}' |awk 'FNR == 2 {print}'|rev |cut -d":" -f1 |cut -d"." -f1) # 40
-          eth_c=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep Internal |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f1 |cut -d"." -f1) # 30
-          eth_d=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep Internal |awk '{print $10}' |awk 'FNR == 2 {print}'|rev |cut -d":" -f1 |cut -d"." -f1) # 50
+          eth_a=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep External |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f2) # 20
+          eth_b=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep External |awk '{print $10}' |awk 'FNR == 2 {print}'|rev |cut -d":" -f2) # 40
+          eth_c=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep Internal |awk '{print $10}' |awk 'FNR == 1 {print}'|rev |cut -d":" -f2) # 30
+          eth_d=$(echo 'show interfaces select pci_address' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep Internal |awk '{print $10}' |awk 'FNR == 2 {print}'|rev |cut -d":" -f2) # 50
           # compare pci value of interface
           if [ $eth_a -lt $eth_b ]; then
             echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep External |awk '{print $1 "," $10; fflush()}' |awk 'FNR == 1 {print}' >> /etc/stm/system_virt_real_device.csv
@@ -273,7 +273,7 @@ function check_bump_type
     bump_type="cooper"
   fi
 
-  if [ $realint_count == "4" ]; then
+  if [ "$realint_count" == "4" ]; then
     if [ ! -z $bump2_type ]; then
       bump2_type="fiber"
     else
@@ -755,181 +755,174 @@ function check_bumps
 echo "=== Start portwell-bypass-monitor === " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
 get_real_ports
 check_bump_type
-if [ "$int_type" == "QLogic"  ]; then
-  echo "It's not installed niagara bypass network card!!! Please install niagara bypass cards" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-else
 if [ "$bump_type" == "fiber" ]; then
   if [ -d /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk ]; then
-    cd /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk/module
-    network_bypass=$(lsmod |grep niagara |awk '{ print $1 }')
-    if [ -z $network_bypass ]; then
-      insmod niagara.ko
-    fi
+	cd /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk/module
+	network_bypass=$(lsmod |grep niagara |awk '{ print $1 }')
+	if [ -z $network_bypass ]; then
+	  insmod niagara.ko
+	fi
   fi
 fi
+if [ "$int_type" != "QLogic" ]; then
+  echo "It's not installed niagara bypass network card!!! Please install niagara bypass cards" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+else
+	while true
+	do
+	  get_real_ports
+	  check_bump_type
+	  if [ "$bump_type" == "fiber" ]; then
+		if [ -d /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk ]; then
+		  cd /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk/module
+		  network_bypass=$(lsmod |grep niagara |awk '{ print $1 }')
+		  if [ -z $network_bypass ]; then
+			insmod niagara.ko
+		  fi
+		fi
+	  fi
 
-while true
-do
-  get_real_ports
-  check_bump_type
-  if [ "$bump_type" == "fiber" ]; then
-    if [ -d /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk ]; then
-      cd /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk/module
-      network_bypass=$(lsmod |grep niagara |awk '{ print $1 }')
-      if [ -z $network_bypass ]; then
-        insmod niagara.ko
-      fi
-    fi
-  fi
+	  if [ $stm_operstatus != "up" ]; then
+		echo "stm_operstatus "$stm_operstatus | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+		check_bumps
+	  else
+		### first bump check
+		if [ "$bump1_operstatus" == "up" ]; then
+		  if [ "$bump_type" == "cooper" ]; then
+			if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
+			  cd /sys/class/niagara/niagara0/0/
+			  bypass_status=$(cat relay_status)
+			  if [ "$bypass_status" != "2" ]; then
+				echo "Disabling bypass on bump1" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				## mode enable d2 mode -> active : bypass
+				sudo niagara_util -d0 0
+				## hb enable
+				sudo niagara_util -a 0
+			  fi
+			fi
+		  else
+			if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
+			  cd /sys/class/niagara/niagara0/0/
+			  bypass_status=$(cat relay_status)
+			  #                       echo "Bypass Status"
+			  #                       echo "Bypass Status : "$bypass_status"; 0 is Normal, 2 is Bypass" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+			  if [ "$bypass_status" != "2" ]; then
+				echo "Disabling bypass on bump1" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				#                           echo 1 > func
+				#echo 0 > bypass0
+				## mode enable d2 mode -> active : bypass
+				sudo niagara_util -d2 0
+				## hb enable
+				sudo niagara_util -a 0
+				## hb disable
+				#sudo niagara_util -r 0
+			  fi
+			fi
+		  fi
+		  check_bumps
+		else
+		  if [ "$bump_type" == "cooper" ]; then
+			if [ $bitw1_cooper_bypass != "1" ]; then
+			  echo "Enabling bypasses on bump1 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+			  sudo niagara_util -r 0
+			  #/opt/stm/target/enable_bypass.sh bump1
+			  check_bumps
+			fi
+		  else
+			if [ $bitw1_fiber_bypass != "1" ]; then
+			  echo "Enabling bypasses on bump1 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+			  sudo niagara_util -r 0
+			  check_bumps
+			fi
+		  fi
+		fi
+		### second bump check
+		if [ $realint_count == "4" ]; then
+		  if [ "$bump2_operstatus" == "up" ]; then
+			if [ "$bump2_type" == "cooper" ]; then
+			  if [ -e /sys/class/niagara/niagara1/0/relay_status ]; then
+				cd /sys/class/niagara/niagara1/0/
+				bypass_status=$(cat relay_status)
+				if [ "$bypass_status" != "2" ]; then
+				  echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				  ## mode enable d2 mode -> active : bypass
+				  sudo niagara_util -d0 0
+				  ## hb enable
+				  sudo niagara_util -a 0
+				fi
+			  fi
+			else
+			  if [ -e /sys/class/niagara/niagara1/0/relay_status ]; then
+				cd /sys/class/niagara/niagara1/0/
+				bypass_status=$(cat relay_status)
+				if [ "$bypass_status" != "2" ]; then
+				  echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				  ## mode enable d2 mode -> active : bypass
+				  sudo niagara_util -d2 1
+				  ## hb enable : active
+				  sudo niagara_util -a 1
+				  ## hb disable : bypass
+				  #sudo niagara_util -r 0
+				fi
 
-  if [ $stm_operstatus != "up" ]; then
-    echo "stm_operstatus "$stm_operstatus | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-    #       echo "Enabling bypasses on bump1 and bump2 due to ongoing core dump operation" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-    #       /opt/stm/target/enable_bypass.sh
-    check_bumps
-  else
-    ### first bump check
-    if [ "$bump1_operstatus" == "up" ]; then
-      if [ "$bump_type" == "cooper" ]; then
-        if [ -d /sys/class/bypass/g3bp0 ]; then
-          cd /sys/class/bypass/g3bp0
-          bypass_status=$(cat bypass)
-          #                       echo "Bypass Status"
-          #                       echo $bypass_status
-          if [ "$bypass_status" != "n" ]; then
-            echo "Disabling bypass on bump1" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-            echo 1 > func
-            echo n > bypass
-          fi
-        fi
-      else
-        if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
-          cd /sys/class/niagara/niagara0/0/
-          bypass_status=$(cat relay_status)
-          #                       echo "Bypass Status"
-          #                       echo "Bypass Status : "$bypass_status"; 0 is Normal, 2 is Bypass" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-          if [ "$bypass_status" != "2" ]; then
-            echo "Disabling bypass on bump1" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-            #                           echo 1 > func
-            #echo 0 > bypass0
-            ## mode enable d2 mode -> active : bypass
-            sudo niagara_util -d2 0
-            ## hb enable
-            sudo niagara_util -a 0
-            ## hb disable
-            #sudo niagara_util -r 0
-          fi
-        fi
-      fi
-      check_bumps
-    else
-      if [ "$bump_type" == "cooper" ]; then
-        if [ $bitw1_cooper_bypass != "b" ]; then
-          echo "Enabling bypasses on bump1 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-          #/opt/stm/target/enable_bypass.sh bump1
-          check_bumps
-        fi
-      else
-        if [ $bitw1_fiber_bypass != "1" ]; then
-          echo "Enabling bypasses on bump1 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-          sudo niagara_util -r 0
-          check_bumps
-        fi
-      fi
-    fi
-    ### second bump check
-    if [ $realint_count == "4" ]; then
-      if [ "$bump2_operstatus" == "up" ]; then
-        if [ "$bump2_type" == "cooper" ]; then
-          if [ -d /sys/class/bypass/g3bp1 ]; then
-            cd /sys/class/bypass/g3bp1
-            bypass_status=$(cat bypass)
-            #                       echo "Bypass Status"
-            #                       echo $bypass_status
-            if [ "$bypass_status" != "n" ]; then
-              echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-              echo 1 > func
-              echo n > bypass
-            fi
-          fi
-        else
-          if [ -e /sys/class/niagara/niagara1/0/relay_status ]; then
-            cd /sys/class/niagara/niagara1/0/
-            bypass_status=$(cat relay_status)
-            #                       echo "Bypass Status"
-            #                       echo "Bypass Status : "$bypass_status"; 0 is Normal, 2 is Bypass" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-            if [ "$bypass_status" != "2" ]; then
-              echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-              #                           echo 1 > func
-              #echo 0 > bypass1
-              ## mode enable d2 mode -> active : bypass
-              sudo niagara_util -d2 1
-              ## hb enable : active
-              sudo niagara_util -a 1
-              ## hb disable : bypass
-              #sudo niagara_util -r 0
-            fi
+			  fi
+			fi
+			check_bumps
+		  else
+			if [ "$bump2_type" == "cooper" ]; then
+			  if [ $bitw2_cooper_bypass != "1" ]; then
+				echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				sudo niagara_util -r 1
+				check_bumps
+			  fi
+			else
+			  if [ $bitw2_fiber_bypass != "1" ]; then
+				echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+				sudo niagara_util -r 1
+				check_bumps
+			  fi
+			fi
+			check_bumps
+		  fi
+		fi
+	  fi
 
-          fi
-        fi
-        check_bumps
-      else
-        if [ "$bump2_type" == "cooper" ]; then
-          if [ $bitw2_cooper_bypass != "b" ]; then
-            echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-            #/opt/stm/target/enable_bypass.sh bump2
-            check_bumps
-          fi
-        else
-          if [ $bitw2_fiber_bypass != "1" ]; then
-            echo "Enabling bypasses on bump2 " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-            sudo niagara_util -r 1
-            check_bumps
-          fi
-        fi
-        check_bumps
-      fi
-    fi
-  fi
-
-
-  # check bypass status
-  if [ "$bump_type" == "cooper" ]; then
-    if [ -d /sys/class/bypass/g3bp0 ]; then
-      bitw1_cooper_bypass=$(cat /sys/class/bypass/g3bp0/bypass)
-    else
-      bitw1_cooper_bypass='None'
-    fi
-    if [ -d /sys/class/bypass/g3bp1 ]; then
-      bitw2_cooper_bypass=$(cat /sys/class/bypass/g3bp1/bypass)
-    else
-      bitw2_cooper_bypass='None'
-    fi
-  else
-    if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
-      bitw1_fiber_bypass=$(cat /sys/class/niagara/niagara0/0/relay_status)
-    else
-      bitw1_fiber_bypass='None'
-    fi
-    if [ -e /sys/class/niagara/niagara1/0/relay_status ]; then
-      bitw2_fiber_bypass=$(cat /sys/class/niagara/niagara1/0/relay_status)
-    else
-      bitw2_fiber_bypass='None'
-    fi
-  fi
-
-  if [ "$bump_type" == "cooper" ]; then
-    echo "cooper bypass status(bump1, bump2 | b=bypass, n=normal) : "$bitw1_cooper_bypass","$bitw2_cooper_bypass | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-  else
-    echo "fiber bypass status(bump1, bump2 | 1=bypass, 2=normal) : "$bitw1_fiber_bypass","$bitw2_fiber_bypass | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-  fi
-  echo "bump1's port1,2 : "$bitw_port_1_enable","$bitw_port_2_enable | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-  echo "bump2's port1,2 : "$bitw2_port_1_enable","$bitw2_port_2_enable | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-  echo "model type : "$model_type | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-  echo "bump1's type, bump2's type : "$bump_type","$bump2_type | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-  echo "segment count : "$seg_count | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-  echo "stm's operstatus : "$stm_operstatus", bump1's status : "$bump1_operstatus" , bump2's status : "$bump2_operstatus | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-  echo "===========================" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-  sleep 10
-done
+	  # check bypass status
+	  if [ "$bump_type" == "cooper" ]; then
+		if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
+		  bitw1_fiber_bypass=$(cat /sys/class/niagara/niagara0/0/relay_status)
+		else
+		  bitw1_fiber_bypass='None'
+		fi
+		if [ -e /sys/class/niagara/niagara1/0/relay_status ]; then
+		  bitw2_fiber_bypass=$(cat /sys/class/niagara/niagara1/0/relay_status)
+		else
+		  bitw2_fiber_bypass='None'
+		fi
+	  else
+		if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
+		  bitw1_fiber_bypass=$(cat /sys/class/niagara/niagara0/0/relay_status)
+		else
+		  bitw1_fiber_bypass='None'
+		fi
+		if [ -e /sys/class/niagara/niagara1/0/relay_status ]; then
+		  bitw2_fiber_bypass=$(cat /sys/class/niagara/niagara1/0/relay_status)
+		else
+		  bitw2_fiber_bypass='None'
+		fi
+	  fi
+	### print current bypass status
+	  if [ "$bump_type" == "cooper" ]; then
+		echo "cooper bypass status(bump1, bump2 | b=bypass, n=normal) : "$bitw1_cooper_bypass","$bitw2_cooper_bypass | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+	  else
+		echo "fiber bypass status(bump1, bump2 | 1=bypass, 2=normal) : "$bitw1_fiber_bypass","$bitw2_fiber_bypass | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+	  fi
+	  echo "bump1's port1,2 : "$bitw_port_1_enable","$bitw_port_2_enable | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+	  echo "bump2's port1,2 : "$bitw2_port_1_enable","$bitw2_port_2_enable | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+	  echo "model type : "$model_type | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+	  echo "bump1's type, bump2's type : "$bump_type","$bump2_type | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+	  echo "segment count : "$seg_count | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+	  echo "stm's operstatus : "$stm_operstatus", bump1's status : "$bump1_operstatus" , bump2's status : "$bump2_operstatus | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+	  echo "===========================" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+	  sleep 10
+	done
 fi
