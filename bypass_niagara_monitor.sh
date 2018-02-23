@@ -749,40 +749,19 @@ function check_bumps
 function rotate_log
 {
 	MAXLOG=5
-	MAXSIZE=10240
+	MAXSIZE=20480000
 	log_name=/var/log/stm_bypass.log
 	file_size=`du -b $log_name | tr -s '\t' ' ' | cut -d' ' -f1`
 	if [ $file_size -gt $MAXSIZE ];then   
 		for i in `seq $((MAXLOG-1)) -1 1`
 		do
 			if [ -e $log_name"."$i ]; then
-				mv "/var/log/stm_bypass.log."{$i,$((i+1))}; 
+				mv $log_name"."{$i,$((i+1))}; 
 			fi
 		done
 		mv $log_name $log_name".1"
+		touch $log_name
 	fi
-#	MaxFileSize=10240000
-#	log_name=/var/log/stm_bypass.log
-#	log_count=1
-#	log_postfix=.$log_count
-#	 #Get size in bytes** 
-#	file_size=`du -b $log_name | tr -s '\t' ' ' | cut -d' ' -f1`
-#	if [ $log_count -eq 5 ];then
-#		
-#	fi
-#	if [ $file_size -gt $MaxFileSize  ];then   
-#		if [ $log_count -lt 5 ];then
-#			if [ -e $log_name$log_postfix ]; then
-#				mv $log_name$log_postfix $log_name$[log_count+1]
-#			fi
-#			mv $log_name $log_name".1"
-#			touch $log_name
-#			log_count=$[log_count+1]
-#			log_postfix=.$log_count
-#		else
-#			log_count=1
-#		fi
-#	fi
 }
 
 # main logic
