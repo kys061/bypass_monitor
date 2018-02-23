@@ -71,11 +71,17 @@ if [ ! -z "$is_fiber" ]; then
 
   if [ ! -e /etc/init.d/bypass_niagara_enable.sh ]; then
 	  cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_niagara_enable.sh /etc/init.d/.
-	  cd /etc/rc6.d
-	  ln -s ../bypass_niagara_enable.sh K20bypass_niagara_enable.sh
-
-	  cd /etc/rc0.d
-	  ln -s ../bypass_niagara_enable.sh K20bypass_niagara_enable.sh
-
+	if [ ! -e /etc/rc6.d/K20bypass_niagara_enable.sh ]; then
+	    # for reboot
+		cd /etc/rc6.d
+		ln -s ../init.d/bypass_niagara_enable.sh K20bypass_niagara_enable.sh
+		echo "make link file in rc6.d"
+	fi
+	if [ ! -e /etc/rc0.d/K20bypass_niagara_enable.sh ]; then
+		# for shutdown
+		cd /etc/rc0.d
+		ln -s ../init.d/bypass_niagara_enable.sh K20bypass_niagara_enable.sh
+		echo "make link file in rc0.d"
+	fi
   fi
 fi
