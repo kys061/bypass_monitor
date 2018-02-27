@@ -149,8 +149,9 @@ do
         fi
       fi
     fi
+  else
+  	echo "stm setup is not enabled or not running.." | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
   fi
-  echo "stm setup is not enabled or not running.." | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
   sleep 3
 done
 
@@ -770,7 +771,7 @@ function rotate_log
 # 3. if stm_operstatus is down, just go checking bump's status again
 # 4. if stm_operstatus is up and each bump's status is up, change bypass to normal mode for each bump if the status of bypass is bypass mode
 # 5. if stm_operstatus is up and each bump's status is down, change bypass to bypass mode for each bump if the status of bypass is normal mode
-echo "=== Start portwell-bypass-monitor === " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+echo "=== Start ${0##*/} === " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
 get_real_ports
 check_bump_type
 if [ "$bump_type" == "fiber" ]; then
@@ -782,6 +783,7 @@ if [ "$bump_type" == "fiber" ]; then
 	fi
   fi
 fi
+check_bumps
 if [ "$int_type" != "Silicom" ]; then
   echo "It's not installed niagara card!!! Please install cards" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
   exit 1
