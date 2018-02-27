@@ -27,10 +27,10 @@ bump_type="cooper"
 model_type="small"
 stm_status="false"
 id="admin"
-pass="_"
+pass="FlowCommand#1"
 sleep 10
 # check stm and make system_virt_real_device.csv until stm is up
-# virt : the name that user want to make
+# virt : the name that users want to make
 # real : the name that stm makes
 # must be interface ordered in /etc/stm/system_virt_real_device.csv : seg1-ext,int, seg2-ext,int
 while ! $stm_status
@@ -138,8 +138,9 @@ do
 				fi
 			fi
 		fi
+	else
+		echo "stm setup is not enabled or not running.." | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
 	fi
-	echo "stm setup is not enabled or not running.." | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
 	sleep 3
 done
 
@@ -246,7 +247,7 @@ function check_bump_type
 		real_port_3_pci=$(cat /etc/stm/system_devices.csv |grep "$real_port_3\$" |awk -F"," '{print $2}' |cut -d":" -f2,3)
 	else
 		real_port_1_pci=$(cat /etc/stm/devices.csv |grep "$real_port_1" |awk -F"," '{print $3}' |cut -d"\"" -f2 |cut -d":" -f2,3)
-		real_port_2_pci=$(cat /etc/stm/devices.csv |grep "$real_port_2" |awk -F"," '{print $3}' |cut -d"\"" -f2 |cut -d":" -f2,3)
+		real_port_3_pci=$(cat /etc/stm/devices.csv |grep "$real_port_3" |awk -F"," '{print $3}' |cut -d"\"" -f2 |cut -d":" -f2,3)
 	fi
 
 	bump_type=$(lspci |grep "$real_port_1_pci" |grep Fiber -o)
@@ -765,6 +766,7 @@ if [ "$bump_type" == "fiber" ]; then
 		fi
 	fi
 fi
+check_bumps
 
 while true
 do
