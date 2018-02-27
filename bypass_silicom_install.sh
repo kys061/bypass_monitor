@@ -5,9 +5,9 @@
 # Must be run as root.
 #
 mkdir -p /opt/stm/bypass_drivers
-mkdir -p /opt/stm/bypass_drivers/niagara
-cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/universal-driver-8b9_dpdk.tar.gz /opt/stm/bypass_drivers/niagara/.
-cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_niagara_monitor.sh /etc/stmfiles/files/scripts/.
+mkdir -p /opt/stm/bypass_drivers/silicom
+cp /opt/stm/target/bp_ctl-5.0.65.1.tar.gz /opt/stm/bypass_drivers/silicom/.
+cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_silicom_monitor.sh /etc/stmfiles/files/scripts/.
 #
 # cooper install
 #
@@ -35,52 +35,41 @@ cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_niagara_monitor.sh
 #
 # fiber install
 #
-is_fiber=$(lspci -m |grep Ether |grep QLogic -o)
+is_fiber=$(lspci -m |grep Ether |grep Silicom -o)
 if [ ! -z "$is_fiber" ]; then
-  cd  /opt/stm/bypass_drivers/niagara
-  tar -zxvf universal-driver-8b9_dpdk.tar.gz
-  cd universal-driver-8b9_dpdk/
+  cd  /opt/stm/bypass_drivers/silicom
+  tar -zxvf bp_ctl-5.0.65.1.tar.gz
+  cd bp_ctl-5.0.65.1
   make
   make install
-  bypass_mod_installed=$(/sbin/lsmod | grep "niagara")
-  if [ ! -z "$bypass_mod_installed" ]; then
-    rmmod niagara
+  bypass_mod_installed=$(/sbin/lsmod | grep "bpctl_mod")
+  if [ -z "$bypass_mod_installed" ]; then
+  	modprobe bpctl_mod.ko
   fi
-#  i2c_mod_installed=$(/sbin/lsmod |grep "i2c_i801")
-#  if [ -z "$i2c_mod_installed" ]; then
-#    modprobe i2c-i801
-#  fi
-  make insmod
-  ## mode enable d2 mode -> active : bypass
-  sudo niagara_util -d2
-  ## hb enable
-  #sudo niagara_util -a 0
-  ## hb disable
-  sudo niagara_util -r
-  ## LLCF enable
-  sudo niagara_util -Q
 
-  sed -i '14a\\sudo niagara_util -Q' /etc/rc.local
-  sed -i '14a\\## LLCF enable' /etc/rc.local
-  sed -i '14a\\sudo niagara_util -r' /etc/rc.local
-  sed -i '14a\\## hb disable' /etc/rc.local
-  sed -i '14a\\sudo niagara_util -d2' /etc/rc.local
-  sed -i '14a\\## mode enable d2 mode -> active : bypass' /etc/rc.local
-  sed -i '14a\\sudo insmod /opt/stm/bypass_drivers/niagara/universal-driver-8b9_dpdk/module/niagara.ko' /etc/rc.local
-  sed -i '14a\\## module enable' /etc/rc.local
+  bpctl_start
 
-  if [ ! -e /etc/init.d/bypass_niagara_enable.sh ]; then
-	  cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_niagara_enable.sh /etc/init.d/.
-	if [ ! -e /etc/rc6.d/K20bypass_niagara_enable.sh ]; then
+#  sed -i '14a\\sudo silicom_util -Q' /etc/rc.local
+#  sed -i '14a\\## LLCF enable' /etc/rc.local
+#  sed -i '14a\\sudo silicom_util -r' /etc/rc.local
+#  sed -i '14a\\## hb disable' /etc/rc.local
+#  sed -i '14a\\sudo silicom_util -d2' /etc/rc.local
+#  sed -i '14a\\## mode enable d2 mode -> active : bypass' /etc/rc.local
+#  sed -i '14a\\sudo insmod /opt/stm/bypass_drivers/silicom/universal-driver-8b9_dpdk/module/niagara.ko' /etc/rc.local
+#  sed -i '14a\\## module enable' /etc/rc.local
+
+  if [ ! -e /etc/init.d/bypass_silicom_enable.sh ]; then
+	  cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_silicom_enable.sh /etc/init.d/.
+	if [ ! -e /etc/rc6.d/K20bypass_silicom_enable.sh ]; then
 	    # for reboot
 		cd /etc/rc6.d
-		ln -s ../init.d/bypass_niagara_enable.sh K20bypass_niagara_enable.sh
+		ln -s ../init.d/bypass_silicom_enable.sh K20bypass_silicom_enable.sh
 		echo "make link file in rc6.d"
 	fi
-	if [ ! -e /etc/rc0.d/K20bypass_niagara_enable.sh ]; then
+	if [ ! -e /etc/rc0.d/K20bypass_silicom_enable.sh ]; then
 		# for shutdown
 		cd /etc/rc0.d
-		ln -s ../init.d/bypass_niagara_enable.sh K20bypass_niagara_enable.sh
+		ln -s ../init.d/bypass_silicom_enable.sh K20bypass_silicom_enable.sh
 		echo "make link file in rc0.d"
 	fi
   fi
