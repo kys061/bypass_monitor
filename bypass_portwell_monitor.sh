@@ -27,7 +27,7 @@ bump_type="cooper"
 model_type="small"
 stm_status="false"
 id="admin"
-pass="admin"
+pass="_"
 sleep 10
 # check stm and make system_virt_real_device.csv until stm is up
 # virt : the name that user want to make
@@ -725,6 +725,24 @@ function check_bumps
 	fi
 }
 
+function rotate_log
+{
+        MAXLOG=5
+        MAXSIZE=20480000
+        log_name=/var/log/stm_bypass.log
+        file_size=`du -b $log_name | tr -s '\t' ' ' | cut -d' ' -f1`
+        if [ $file_size -gt $MAXSIZE ];then   
+                for i in `seq $((MAXLOG-1)) -1 1`
+                do
+                        if [ -e $log_name"."$i ]; then
+                                mv $log_name"."{$i,$((i+1))}; 
+                        fi
+                done
+                mv $log_name $log_name".1"
+                touch $log_name
+        fi
+}
+
 # main logic
 # 1. get real and virt port
 # 2. check type of bump (fiber) and do checking module is installed and loaded..
@@ -750,6 +768,7 @@ fi
 
 while true
 do
+	rotate_log
 	get_real_ports
 	check_bump_type
 	if [ "$bump_type" == "fiber" ]; then
