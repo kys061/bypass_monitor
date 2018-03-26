@@ -8,9 +8,7 @@ mkdir -p /opt/stm/bypass_drivers
 mkdir -p /opt/stm/bypass_drivers/portwell
 mkdir -p /opt/stm/bypass_drivers/portwell_fiber
 cp /opt/stm/target/caswell_drv_network-bypass-V3.20.0.zip /opt/stm/bypass_drivers/portwell_fiber/.
-cp /opt/stm/target/portwell-bypass-monitor.sh /opt/stm/bypass_drivers/portwell_fiber/.
 cp /opt/stm/target/caswell_drv_bypass-gen3-V1.5.1.zip /opt/stm/bypass_drivers/portwell/.
-cp /opt/stm/target/portwell-bypass-monitor.sh /opt/stm/bypass_drivers/portwell/.
 #
 # cooper install
 #
@@ -62,4 +60,20 @@ if [ ! -z "$is_fiber" ]; then
     echo 2 > bypass1
     echo 1 > bpe1
   fi
+fi
+# make initial file for reboot and shutdown
+if [ ! -e /etc/init.d/bypass_portwell_enable.sh ]; then
+  cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_portwell_enable.sh /etc/init.d/.
+    if [ ! -e /etc/rc6.d/K20bypass_portwell_enable.sh ]; then
+      # for reboot
+      cd /etc/rc6.d
+      ln -s ../init.d/bypass_portwell_enable.sh K20bypass_portwell_enable.sh
+      echo "make link file in rc6.d"
+    fi
+    if [ ! -e /etc/rc0.d/K20bypass_portwell_enable.sh ]; then
+      # for shutdown
+      cd /etc/rc0.d
+      ln -s ../init.d/bypass_portwell_enable.sh K20bypass_portwell_enable.sh
+      echo "make link file in rc0.d"
+    fi
 fi

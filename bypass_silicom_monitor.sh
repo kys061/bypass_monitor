@@ -931,9 +931,9 @@ else
 	  fi
 	### print current bypass status
 	  if [ "$bump_type" == "cooper" ]; then
-		echo "cooper bypass status(bump1, bump2 | bypass, normal) : "$bitw1_cooper_bypass","$bitw2_cooper_bypass | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+		echo $int_type" cooper bypass status(bump1, bump2 | bypass, normal) : "$bitw1_cooper_bypass","$bitw2_cooper_bypass | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
 	  else
-		echo "fiber bypass status(bump1, bump2 | bypass, normal) : "$bitw1_fiber_bypass","$bitw2_fiber_bypass | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+		echo $int_type" fiber bypass status(bump1, bump2 | bypass, normal) : "$bitw1_fiber_bypass","$bitw2_fiber_bypass | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
 	  fi
 	  echo "bump1's port1,2 : "$bitw_port_1_enable","$bitw_port_2_enable | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
 	  echo "bump2's port1,2 : "$bitw2_port_1_enable","$bitw2_port_2_enable | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log

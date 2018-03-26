@@ -62,4 +62,19 @@ if [ ! -z "$is_fiber" ]; then
     echo 2 > bypass1
     echo 1 > bpe1
   fi
+  if [ ! -e /etc/init.d/bypass_portwell_enable.sh ]; then
+    cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_portwell_enable.sh /etc/init.d/.
+	if [ ! -e /etc/rc6.d/K20bypass_portwell_enable.sh ]; then
+	  # for reboot
+          cd /etc/rc6.d
+          ln -s ../init.d/bypass_portwell_enable.sh K20bypass_portwell_enable.sh
+          echo "make link file in rc6.d"
+	fi
+	if [ ! -e /etc/rc0.d/K20bypass_portwell_enable.sh ]; then
+          # for shutdown
+          cd /etc/rc0.d
+          ln -s ../init.d/bypass_portwell_enable.sh K20bypass_portwell_enable.sh
+          echo "make link file in rc0.d"
+	fi
+  fi
 fi
