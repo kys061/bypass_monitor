@@ -27,7 +27,7 @@ bump_type="cooper"
 model_type="small"
 stm_status="false"
 id="admin"
-pass="admin"
+pass="FlowCommand#1"
 sleep 10
 # check stm and make system_virt_real_device.csv until stm is up
 # virt : the name that user want to make
@@ -265,8 +265,8 @@ function check_bump_type
     fi
   fi
 
-  bump_type=$(lspci |grep "$real_port_1_pci" |grep SFP+ -o)
-  bump2_type=$(lspci |grep "$real_port_3_pci" |grep SFP+ -o)
+  bump_type=$(lspci |grep "$real_port_1_pci" |grep -E '(SFP+|Fiber)' -o)
+  bump2_type=$(lspci |grep "$real_port_3_pci" |grep -E '(SFP+|Fiber)' -o)
   int_type=$(lspci -m |grep "$real_port_1_pci" |grep Silicom -o)
   if [ ! -z $bump_type ]; then
     bump_type="fiber"
