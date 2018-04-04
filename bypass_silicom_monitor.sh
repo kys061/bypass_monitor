@@ -810,7 +810,9 @@ else
 		if [ "$bump1_operstatus" == "up" ]; then
 		  if [ "$bump_type" == "cooper" ]; then
 			if ! bpctl_util "$real_port_1_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
-				sudo bpctl_util "$real_port_1_pci" set_dis_bypass on >/dev/null 2>&1
+				sudo bpctl_util "$real_port_3_pci" set_dis_bypass off >/dev/null 2>&1
+				sudo bpctl_util "$real_port_3_pci" set_bypass off >/dev/null 2>&1
+#				sudo bpctl_util "$real_port_1_pci" set_dis_bypass on >/dev/null 2>&1
 				echo "Disabling bypass on bump1" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
 			fi
 #			if [ -e /sys/class/niagara/niagara0/0/relay_status ]; then
@@ -823,7 +825,9 @@ else
 		  else
 			  # non-bypass is true: 0, false: 1
 			if ! bpctl_util "$real_port_1_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
-				sudo bpctl_util "$real_port_1_pci" set_dis_bypass on >/dev/null 2>&1
+				sudo bpctl_util "$real_port_3_pci" set_dis_bypass off >/dev/null 2>&1
+				sudo bpctl_util "$real_port_3_pci" set_bypass off >/dev/null 2>&1
+#				sudo bpctl_util "$real_port_1_pci" set_dis_bypass on >/dev/null 2>&1
 				echo "Disabling bypass on bump1" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
 			fi
 		  fi
@@ -854,7 +858,9 @@ else
 			if [ "$bump2_type" == "cooper" ]; then
 		  	  if ! bpctl_util "$real_port_3_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
 				echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-			    sudo bpctl_util "$real_port_3_pci" set_dis_bypass on >/dev/null 2>&1
+				sudo bpctl_util "$real_port_3_pci" set_dis_bypass off >/dev/null 2>&1
+				sudo bpctl_util "$real_port_3_pci" set_bypass off >/dev/null 2>&1
+#			    sudo bpctl_util "$real_port_3_pci" set_dis_bypass on >/dev/null 2>&1
 			  fi
 #			  if [ -e /sys/class/niagara/niagara1/0/relay_status ]; then
 #				cd /sys/class/niagara/niagara1/0/
@@ -867,7 +873,9 @@ else
 			  # non-bypass is true: 0, false: 1
 		  	  if ! bpctl_util "$real_port_3_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
 				echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-			    sudo bpctl_util "$real_port_3_pci" set_dis_bypass on >/dev/null 2>&1
+				sudo bpctl_util "$real_port_3_pci" set_dis_bypass off >/dev/null 2>&1
+				sudo bpctl_util "$real_port_3_pci" set_bypass off >/dev/null 2>&1
+#			    sudo bpctl_util "$real_port_3_pci" set_dis_bypass on >/dev/null 2>&1
 			  fi
 			fi
 			check_bumps
