@@ -6,7 +6,7 @@
 #
 mkdir -p /opt/stm/bypass_drivers
 mkdir -p /opt/stm/bypass_drivers/silicom
-cp /opt/stm/target/bp_ctl-5.0.65.1.tar.gz /opt/stm/bypass_drivers/silicom/.
+cp /opt/stm/target/bp_ctl-5.0.65.1.tar.gz /opt/stm/bypass_drivers/silicom_bpdrv/.
 cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_silicom_monitor.sh /etc/stmfiles/files/scripts/.
 #
 # cooper install
@@ -37,7 +37,7 @@ cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_silicom_monitor.sh
 #
 is_fiber=$(lspci -m |grep Ether |grep Silicom -o)
 if [ ! -z "$is_fiber" ]; then
-  cd  /opt/stm/bypass_drivers/silicom
+  cd  /opt/stm/bypass_drivers/silicom_bpdrv
   tar -zxvf bp_ctl-5.0.65.1.tar.gz
   cd bp_ctl-5.0.65.1
   make
