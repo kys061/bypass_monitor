@@ -4,16 +4,27 @@
 #
 # Must be run as root.
 #
+kernel_ver=4.15.0-20-generic
+uname_r=$(uname -r)
+
+if [ "$uname_r" = "$kernel_ver" ]; then
+  bpcooper_ver=V1.21.3
+  bpfiber_ver=V3.20.2
+else
+  bpcooper_ver=V1.13.1
+  bpfiber_ver=V3.20.0
+fi
+
 mkdir -p /opt/stm/bypass_drivers
 mkdir -p /opt/stm/bypass_drivers/portwell
 mkdir -p /opt/stm/bypass_drivers/portwell_fiber
-cp /opt/stm/target/caswell_drv_network-bypass-V3.20.0.zip /opt/stm/bypass_drivers/portwell_fiber/.
-cp /opt/stm/target/caswell_drv_bypass-gen3-V1.5.1.zip /opt/stm/bypass_drivers/portwell/.
+cp /etc/stmfiles/files/scripts/caswell_drv_network-bypass-$bpfiber_ver.zip /opt/stm/bypass_drivers/portwell_fiber/.
+cp /etc/stmfiles/files/scripts/caswell_drv_bypass-gen3-$bpcooper_ver.zip /opt/stm/bypass_drivers/portwell/.
 #
 # cooper install
 #
 cd  /opt/stm/bypass_drivers/portwell
-unzip caswell_drv_bypass-gen3-V1.5.1.zip
+unzip caswell_drv_bypass-gen3-$bpcooper_ver.zip
 cd src/driver
 make [KSRC=..]
 bypass_mod_installed=$(/sbin/lsmod | grep "caswell_bpgen3")
@@ -38,7 +49,7 @@ fi
 is_fiber=$(lspci |grep Ether |grep Fiber -o)
 if [ ! -z "$is_fiber" ]; then
   cd  /opt/stm/bypass_drivers/portwell_fiber
-  unzip caswell_drv_network-bypass-V3.20.0.zip
+  unzip caswell_drv_network-bypass-$bpfiber_ver.zip
   cd driver
   make [KSRC=..]
   bypass_mod_installed=$(/sbin/lsmod | grep "network_bypass")

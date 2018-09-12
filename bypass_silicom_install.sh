@@ -4,9 +4,10 @@
 #
 # Must be run as root.
 #
+version=bp_ctl-5.2.0.37
 mkdir -p /opt/stm/bypass_drivers
-mkdir -p /opt/stm/bypass_drivers/silicom
-cp /opt/stm/target/bp_ctl-5.0.65.1.tar.gz /opt/stm/bypass_drivers/silicom_bpdrv/.
+mkdir -p /opt/stm/bypass_drivers/silicom_bpdrv
+cp /opt/stm/target/$version.tar.gz /opt/stm/bypass_drivers/silicom_bpdrv/.
 cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_silicom_monitor.sh /etc/stmfiles/files/scripts/.
 #
 # cooper install
@@ -36,28 +37,46 @@ cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_silicom_monitor.sh
 # fiber install
 #
 is_fiber=$(lspci -m |grep Ether |grep Silicom -o)
-if [ ! -z "$is_fiber" ]; then
-  cd  /opt/stm/bypass_drivers/silicom_bpdrv
-  tar -zxvf bp_ctl-5.0.65.1.tar.gz
-  cd bp_ctl-5.0.65.1
-  make
-  make install
-  bypass_mod_installed=$(/sbin/lsmod | grep "bpctl_mod")
-  if [ -z "$bypass_mod_installed" ]; then
-  	modprobe bpctl_mod.ko
+if [ -d /opt/stm/bypass_drivers/silicom_bpdrv/$version ]; then
+  echo "$version silicom bypass drv is already installed!"
+  if [ ! -e /etc/init.d/bypass_silicom_enable.sh ]; then
+	  cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_silicom_enable.sh /etc/init.d/.
+	if [ ! -e /etc/rc6.d/K20bypass_silicom_enable.sh ]; then
+	    # for reboot
+		cd /etc/rc6.d
+		ln -s ../init.d/bypass_silicom_enable.sh K20bypass_silicom_enable.sh
+		echo "make link file in rc6.d"
+	fi
+	if [ ! -e /etc/rc0.d/K20bypass_silicom_enable.sh ]; then
+		# for shutdown
+		cd /etc/rc0.d
+		ln -s ../init.d/bypass_silicom_enable.sh K20bypass_silicom_enable.sh
+		echo "make link file in rc0.d"
+	fi
   fi
-
-  bpctl_start
-
-#  sed -i '14a\\sudo silicom_util -Q' /etc/rc.local
-#  sed -i '14a\\## LLCF enable' /etc/rc.local
-#  sed -i '14a\\sudo silicom_util -r' /etc/rc.local
-#  sed -i '14a\\## hb disable' /etc/rc.local
-#  sed -i '14a\\sudo silicom_util -d2' /etc/rc.local
-#  sed -i '14a\\## mode enable d2 mode -> active : bypass' /etc/rc.local
-#  sed -i '14a\\sudo insmod /opt/stm/bypass_drivers/silicom/universal-driver-8b9_dpdk/module/niagara.ko' /etc/rc.local
-#  sed -i '14a\\## module enable' /etc/rc.local
-
+else
+  if [ ! -z "$is_fiber" ]; then
+    cd  /opt/stm/bypass_drivers/silicom_bpdrv
+    tar -zxvf $version.tar.gz
+    cd $version
+    make
+    make install
+    #bypass_mod_installed=$(/sbin/lsmod | grep "bpctl_mod")
+    #if [ -z "$bypass_mod_installed" ]; then
+    	#modprobe bpctl_mod.ko
+    #fi
+  
+    bpctl_start
+  
+  #  sed -i '14a\\sudo silicom_util -Q' /etc/rc.local
+  #  sed -i '14a\\## LLCF enable' /etc/rc.local
+  #  sed -i '14a\\sudo silicom_util -r' /etc/rc.local
+  #  sed -i '14a\\## hb disable' /etc/rc.local
+  #  sed -i '14a\\sudo silicom_util -d2' /etc/rc.local
+  #  sed -i '14a\\## mode enable d2 mode -> active : bypass' /etc/rc.local
+  #  sed -i '14a\\sudo insmod /opt/stm/bypass_drivers/silicom/universal-driver-8b9_dpdk/module/niagara.ko' /etc/rc.local
+  #  sed -i '14a\\## module enable' /etc/rc.local
+  fi
   if [ ! -e /etc/init.d/bypass_silicom_enable.sh ]; then
 	  cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_silicom_enable.sh /etc/init.d/.
 	if [ ! -e /etc/rc6.d/K20bypass_silicom_enable.sh ]; then
@@ -74,3 +93,4 @@ if [ ! -z "$is_fiber" ]; then
 	fi
   fi
 fi
+

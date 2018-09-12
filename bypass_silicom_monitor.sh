@@ -2,7 +2,7 @@
 #
 #####################################
 # Copyright (c) 2018 Saisei         #
-# Last Date : 2018.02.20            #
+# Last Date : 2018.09.10            #
 # Writer : yskang(kys061@gmail.com) #
 #####################################
 #
@@ -26,6 +26,7 @@ dumping_core="false"
 bump_type="cooper"
 model_type="small"
 stm_status="false"
+bp_ver="bp_ctl-5.2.0.37"
 id="admin"
 pass="FlowCommand#1"
 sleep 10
@@ -150,7 +151,7 @@ do
       fi
     fi
   else
-    echo "stm setup is not enabled or not running.." | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+  	echo "stm setup is not enabled or not running.." | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
   fi
   sleep 3
 done
@@ -264,7 +265,7 @@ function check_bump_type
       real_port_3_pci=$(cat /etc/stm/devices.csv |grep "$real_port_3" |awk -F"," '{print $3}' |cut -d"\"" -f2 |cut -d":" -f2,3)
     fi
   fi
-  
+
   bump_type=$(lspci |grep "$real_port_1_pci" |grep -E '(SFP+|Fiber)' -o)
   bump2_type=$(lspci |grep "$real_port_3_pci" |grep -E '(SFP+|Fiber)' -o)
   int_type=$(lspci -m |grep "$real_port_1_pci" |grep Silicom -o)
@@ -273,7 +274,7 @@ function check_bump_type
   else
     bump_type="cooper"
   fi
-  
+
   if [ "$realint_count" == "4" ]; then
     if [ ! -z $bump2_type ]; then
       bump2_type="fiber"
@@ -297,11 +298,16 @@ function check_model_type_enabled()
       if [ $1 -eq 1 ] && [ $2 -eq 2 ]; then
         bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep $real_port_2 |awk '{print $4}')
       fi
-      if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
-        bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep $real_port_3 |awk '{print $4}')
-      fi
-      if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
-        bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep $real_port_4 |awk '{print $4}')
+      if [ "$realint_count" == "4" ]; then
+        if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+          bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep $real_port_3 |awk '{print $4}')
+        fi
+        if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
+          bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep $real_port_4 |awk '{print $4}')
+        fi
+      else
+        bitw2_port_1_enable='None'
+        bitw2_port_2_enable='None'
       fi
     else
       if [ $1 -eq 1 ] && [ $2 -eq 1 ]; then
@@ -310,11 +316,16 @@ function check_model_type_enabled()
       if [ $1 -eq 1 ] && [ $2 -eq 2 ]; then
         bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_2 |awk '{print $4}')
       fi
-      if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
-        bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_3 |awk '{print $4}')
-      fi
-      if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
-        bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_4 |awk '{print $4}')
+      if [ "$realint_count" == "4" ]; then
+        if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+          bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_3 |awk '{print $4}')
+        fi
+        if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
+          bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_4 |awk '{print $4}')
+        fi
+      else
+        bitw2_port_1_enable='None'
+        bitw2_port_2_enable='None'
       fi
       #       declare "bitw${2}_port_${1}_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_1 |awk '{print $4}')"
     fi
@@ -327,11 +338,16 @@ function check_model_type_enabled()
       if [ $1 -eq 1 ] && [ $2 -eq 2 ]; then
         bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep $real_port_2 |awk '{print $6}')
       fi
-      if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
-        bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep $real_port_3 |awk '{print $6}')
-      fi
-      if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
-        bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep $real_port_4 |awk '{print $6}')
+      if [ "$realint_count" == "4" ]; then
+        if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+          bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep $real_port_3 |awk '{print $6}')
+        fi
+        if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
+          bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Socket |grep $real_port_4 |awk '{print $6}')
+        fi
+      else
+        bitw2_port_1_enable='None'
+        bitw2_port_2_enable='None'
       fi
     else
       if [ $1 -eq 1 ] && [ $2 -eq 1 ]; then
@@ -340,11 +356,16 @@ function check_model_type_enabled()
       if [ $1 -eq 1 ] && [ $2 -eq 2 ]; then
         bitw_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_2 |awk '{print $6}')
       fi
-      if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
-        bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_3 |awk '{print $6}')
-      fi
-      if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
-        bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_4 |awk '{print $6}')
+      if [ "$realint_count" == "4" ]; then
+        if [ $1 -eq 2 ] && [ $2 -eq 1 ]; then
+          bitw2_port_1_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_3 |awk '{print $6}')
+        fi
+        if [ $1 -eq 2 ] && [ $2 -eq 2 ]; then
+          bitw2_port_2_enable=$(echo 'show interfaces select system_interface' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_4 |awk '{print $6}')
+        fi
+      else
+        bitw2_port_1_enable='None'
+        bitw2_port_2_enable='None'
       fi
       #       declare "bitw${2}_port_${1}_enable=$(echo 'show interfaces' | sudo /opt/stm/target/pcli/stm_cli.py $id:$pass@localhost |grep Ethernet |grep $real_port_1 |awk '{print $4}')"
     fi
@@ -452,7 +473,7 @@ function check_bumps()
   if [ ! -z $bitw_port_2_adminstatus ]; then
     if [ "$bitw_port_1_adminstatus" == "up" ] && [ "$bitw_port_2_adminstatus" == "up" ]; then
       if [ "$bump_type" == "cooper" ]; then
-        if [ -d /proc/net/bypass ]; then
+        #if [ -e /proc/net/bypass/bypass_vEth0/bypass ]; then
           if [ $bitw_port_1_enable == "Enabled" ] && [ $bitw_port_2_enable == "Enabled" ]; then
             if [ $model_type == "tiny" ]; then
               # check interface thread hang
@@ -465,7 +486,7 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             else
@@ -477,12 +498,12 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             fi
           fi
-          if [ -d /proc/net/bypass ]; then
+          #if [ -e /proc/net/bypass/bypass_vEth0/bypass ]; then
             if [ "$bitw2_port_1_enable" == "Enabled" ] && [ "$bitw2_port_2_enable" == "Enabled" ]; then
               if [ $model_type == "tiny" ]; then
                 # check interface thread hang
@@ -494,7 +515,7 @@ function check_bumps()
                   # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                   # for ((i=0; i<${#stm_process_num[@]}; i++));
                   # do
-                  reboot
+                    reboot
                   # done
                 fi
               else
@@ -505,15 +526,15 @@ function check_bumps()
                   # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                   # for ((i=0; i<${#stm_process_num[@]}; i++));
                   # do
-                  reboot
+                    reboot
                   # done
                 fi
               fi
             fi
-          fi
-        fi
+          #fi
+        #fi
       else
-        if [ -d /proc/net/bypass ]; then
+        #if [ -e /proc/net/bypass/bypass_vEth0/bypass ]; then
           if [ "$bitw_port_1_enable" == "Enabled" ] && [ "$bitw_port_2_enable" == "Enabled" ]; then
             if [ $model_type == "tiny" ]; then
               # check interface thread hang
@@ -525,7 +546,7 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             else
@@ -536,13 +557,13 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             fi
           fi
-        fi
-        if [ -d /proc/net/bypass ]; then
+        #fi
+        #if [ -e /proc/net/bypass/bypass_vEth0/bypass ]; then
           if [ "$bitw2_port_1_enable" == "Enabled" ] && [ "$bitw2_port_2_enable" == "Enabled" ]; then
             if [ $model_type == "tiny" ]; then
               # check interface thread hang
@@ -554,7 +575,7 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             else
@@ -565,19 +586,19 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             fi
           fi
-        fi
+        #fi
       fi
     fi
   fi
   if [ ! -z $bitw2_port_2_adminstatus ]; then
     if [ "$bitw2_port_1_adminstatus" == "up" ] && [ "$bitw2_port_2_adminstatus" == "up" ]; then
       if [ "$bump2_type" == "cooper" ]; then
-        if [ -d /proc/net/bypass ]; then
+        #if [ -e /proc/net/bypass/bypass_vEth0/bypass ]; then
           if [ "$bitw_port_1_enable" == "Enabled" ] && [ "$bitw_port_2_enable" == "Enabled" ]; then
             if [ $model_type == "tiny" ]; then
               # check interface thread hang
@@ -589,7 +610,7 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             else
@@ -600,12 +621,12 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             fi
           fi
-          if [ -d /proc/net/bypass ]; then
+          if [ -e /proc/net/bypass/bypass_vEth0/bypass ]; then
             if [ "$bitw2_port_1_enable" == "Enabled" ] && [ "$bitw2_port_2_enable" == "Enabled" ]; then
               if [ $model_type == "tiny" ]; then
                 # check interface thread hang
@@ -617,7 +638,7 @@ function check_bumps()
                   # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                   # for ((i=0; i<${#stm_process_num[@]}; i++));
                   # do
-                  reboot
+                    reboot
                   # done
                 fi
               else
@@ -628,15 +649,15 @@ function check_bumps()
                   # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                   # for ((i=0; i<${#stm_process_num[@]}; i++));
                   # do
-                  reboot
+                    reboot
                   # done
                 fi
               fi
             fi
           fi
-        fi
+        #fi
       else
-        if [ -d /proc/net/bypass ]; then
+        #if [ -e /proc/net/bypass/bypass_vEth0/bypass ]; then
           if [ "$bitw_port_1_enable" == "Enabled" ] && [ "$bitw_port_2_enable" == "Enabled" ]; then
             if [ $model_type == "tiny" ]; then
               # check interface thread hang
@@ -648,7 +669,7 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             else
@@ -659,13 +680,13 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             fi
           fi
-        fi
-        if [ -d /proc/net/bypass ]; then
+        #fi
+        #if [ -e /proc/net/bypass/bypass_vEth0/bypass ]; then
           if [ "$bitw2_port_1_enable" == "Enabled" ] && [ "$bitw2_port_2_enable" == "Enabled" ]; then
             if [ $model_type == "tiny" ]; then
               # check interface thread hang
@@ -677,7 +698,7 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             else
@@ -688,12 +709,12 @@ function check_bumps()
                 # stm_process_num=($(ps -ef |grep stm$ |awk '{print $2}'))
                 # for ((i=0; i<${#stm_process_num[@]}; i++));
                 # do
-                reboot
+                  reboot
                 # done
               fi
             fi
           fi
-        fi
+        #fi
       fi
     fi
   fi
@@ -704,7 +725,7 @@ function check_bumps()
   echo "Bump2 operstatus" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
   echo $bump2_operstatus  | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
   echo "================" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-  
+
   # case bump count is 2
   if [ $seg_count -eq 2 ]; then
     if [ "$bump1_operstatus" == "up" ]; then
@@ -745,20 +766,20 @@ function check_bumps()
 
 function rotate_log()
 {
-  MAXLOG=5
-  MAXSIZE=20480000
-  log_name=/var/log/stm_bypass.log
-  file_size=`du -b $log_name | tr -s '\t' ' ' | cut -d' ' -f1`
-  if [ $file_size -gt $MAXSIZE ];then   
-  for i in `seq $((MAXLOG-1)) -1 1`
-  do
-    if [ -e $log_name"."$i ]; then
-      mv $log_name"."{$i,$((i+1))}; 
-    fi
-  done
-  mv $log_name $log_name".1"
-  touch $log_name
-fi
+	MAXLOG=5
+	MAXSIZE=20480000
+	log_name=/var/log/stm_bypass.log
+	file_size=`du -b $log_name | tr -s '\t' ' ' | cut -d' ' -f1`
+	if [ $file_size -gt $MAXSIZE ];then   
+		for i in `seq $((MAXLOG-1)) -1 1`
+		do
+			if [ -e $log_name"."$i ]; then
+				mv $log_name"."{$i,$((i+1))}; 
+			fi
+		done
+		mv $log_name $log_name".1"
+		touch $log_name
+	fi
 }
 
 function enable_silicom_bypass()
@@ -814,21 +835,21 @@ function disable_silicom_bypass()
     fi
   fi
   if [ $1 -eq 2 ]; then 
-  if [ "$bump2_type" == "cooper" ]; then
-    if ! bpctl_util "$real_port_3_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
-      sudo bpctl_util "$real_port_3_pci" set_dis_bypass off >/dev/null 2>&1
-      sudo bpctl_util "$real_port_3_pci" set_bypass off >/dev/null 2>&1
-      echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+    if [ "$bump2_type" == "cooper" ]; then
+      if ! bpctl_util "$real_port_3_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
+        sudo bpctl_util "$real_port_3_pci" set_dis_bypass off >/dev/null 2>&1
+        sudo bpctl_util "$real_port_3_pci" set_bypass off >/dev/null 2>&1
+        echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+      fi
+    else
+      # non-bypass is true: 0, false: 1
+      if ! bpctl_util "$real_port_3_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
+        sudo bpctl_util "$real_port_3_pci" set_dis_bypass off >/dev/null 2>&1
+        sudo bpctl_util "$real_port_3_pci" set_bypass off >/dev/null 2>&1
+        echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+      fi
     fi
-  else
-    # non-bypass is true: 0, false: 1
-    if ! bpctl_util "$real_port_3_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
-      sudo bpctl_util "$real_port_3_pci" set_dis_bypass off >/dev/null 2>&1
-      sudo bpctl_util "$real_port_3_pci" set_bypass off >/dev/null 2>&1
-      echo "Disabling bypass on bump2" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-    fi
-  fi
-fi  
+  fi  
 }
 
 function check_bypass_status()
@@ -836,14 +857,18 @@ function check_bypass_status()
   # check bypass status
   if [ "$bump_type" == "cooper" ]; then
     if bpctl_util "$real_port_1_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
-      bitw1_fiber_bypass='normal'
+      bitw1_cooper_bypass='normal'
     else
-      bitw1_fiber_bypass='bypass'
+      bitw1_cooper_bypass='bypass'
     fi
-    if bpctl_util "$real_port_3_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
-      bitw2_fiber_bypass='normal'
+    if [ $realint_count == "4" ]; then
+      if bpctl_util "$real_port_3_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
+        bitw2_cooper_bypass='normal'
+      else
+        bitw2_cooper_bypass='bypass'
+      fi
     else
-      bitw2_fiber_bypass='bypass'
+      bitw2_cooper_bypass='None'
     fi
   else
     if bpctl_util "$real_port_1_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
@@ -851,10 +876,14 @@ function check_bypass_status()
     else
       bitw1_fiber_bypass='bypass'
     fi
-    if bpctl_util "$real_port_3_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
-      bitw2_fiber_bypass='normal'
+    if [ $realint_count == "4" ]; then
+      if bpctl_util "$real_port_3_pci" get_bypass |grep non-Bypass >/dev/null 2>&1; then
+        bitw2_fiber_bypass='normal'
+      else
+        bitw2_fiber_bypass='bypass'
+      fi
     else
-      bitw2_fiber_bypass='bypass'
+      bitw2_fiber_bypass='None'
     fi
   fi
 }
@@ -877,17 +906,16 @@ function print_bypass_status()
 
 function fiber_module_check()
 {
-  if [ "$bump_type" == "fiber" ]; then
-    if [ -d /opt/stm/bypass_drivers/silicom_bpdrv/bp_ctl-5.0.65.1 ]; then
-      cd /opt/stm/bypass_drivers/silicom_bpdrv/bp_ctl-5.0.65.1
+#  if [ "$bump_type" == "fiber" ]; then
+    if [ -d /opt/stm/bypass_drivers/silicom_bpdrv/$bp_ver ]; then
+      cd /opt/stm/bypass_drivers/silicom_bpdrv/$bp_ver
       network_bypass=$(lsmod |grep bpctl_mod |awk '{ print $1 }')
       if [ -z $network_bypass ]; then
-        echo "insert bpctl_mod.ko" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-        # insmod bpctl_mod.ko
+	      echo "Insert bpctl module" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
         sudo bpctl_start
       fi
     fi
-  fi
+#  fi
 }
 
 # main logic
@@ -897,31 +925,33 @@ function fiber_module_check()
 # 4. if stm_operstatus is up and each bump's status is up, change bypass to normal mode for each bump if the status of bypass is bypass mode
 # 5. if stm_operstatus is up and each bump's status is down, change bypass to bypass mode for each bump if the status of bypass is normal mode
 echo "=== Start ${0##*/} === " | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
-# precheck
+# pre-check
+sudo bpctl_util all set_std_nic off >/dev/null 2>&1
+sudo bpctl_util all set_bypass_pwoff on >/dev/null 2>&1
+sudo bpctl_util all set_bypass_pwup on >/dev/null 2>&1
 get_real_ports
 check_bump_type
 fiber_module_check
 check_bumps
 # main
 if [ "$int_type" != "Silicom" ]; then
-  echo "It's not installed Silicom card!!! Please install cards" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
+  echo "It's not installed niagara card!!! Please install cards" | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
   exit 1
 else
-  while true
-  do
-    rotate_log
-    get_real_ports
-    check_bump_type
+	while true
+	do
+	  rotate_log
+	  get_real_ports
+	  check_bump_type
     fiber_module_check
-    
     # stm_operational status check
-    if [ $stm_operstatus != "up" ]; then
+	  if [ $stm_operstatus != "up" ]; then
       echo "stm_operstatus "$stm_operstatus | awk '{ print strftime(), $0; fflush() }' >> /var/log/stm_bypass.log
       check_bumps
       enable_silicom_bypass 1
       enable_silicom_bypass 2
-    else
-      ### first bump check
+	  else
+		  ### first bump check
       if [ "$bump1_operstatus" == "up" ]; then
         disable_silicom_bypass 1
         check_bumps
@@ -939,11 +969,11 @@ else
           check_bumps
         fi
       fi
-    fi
+	  fi
     # checking bypass
     check_bypass_status
-    ### print current bypass status
+	  ### print current bypass status
     print_bypass_status
-    sleep 10
-  done
+	  sleep 10
+	done
 fi

@@ -1,0 +1,10 @@
+[Unit]
+Description=Bypass STM
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStop=/etc/init.d/bypass_silicom_enable.sh
+
+[Install]
+WantedBy=multi-user.target
