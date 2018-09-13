@@ -73,18 +73,25 @@ if [ ! -z "$is_fiber" ]; then
   fi
 fi
 # make initial file for reboot and shutdown
-if [ ! -e /etc/init.d/bypass_portwell_enable.sh ]; then
-  cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_portwell_enable.sh /etc/init.d/.
-    if [ ! -e /etc/rc6.d/K20bypass_portwell_enable.sh ]; then
-      # for reboot
-      cd /etc/rc6.d
-      ln -s ../init.d/bypass_portwell_enable.sh K20bypass_portwell_enable.sh
-      echo "make link file in rc6.d"
-    fi
-    if [ ! -e /etc/rc0.d/K20bypass_portwell_enable.sh ]; then
-      # for shutdown
-      cd /etc/rc0.d
-      ln -s ../init.d/bypass_portwell_enable.sh K20bypass_portwell_enable.sh
-      echo "make link file in rc0.d"
-    fi
+if [ "$uname_r" = "$kernel_ver" ]; then
+  cp /etc/stmfiles/files/scripts/portwell_multi.service /lib/systemd/system/.
+  cd /lib/systemd/system/
+  systemctl daemon-reload
+  systemctl enable portwell_multi.service
+else
+  if [ ! -e /etc/init.d/bypass_portwell_enable.sh ]; then
+    cp /home/saisei/deploy/script/bypass7_2/bypass_monitor/bypass_portwell_enable.sh /etc/init.d/.
+      if [ ! -e /etc/rc6.d/K20bypass_portwell_enable.sh ]; then
+        # for reboot
+        cd /etc/rc6.d
+        ln -s ../init.d/bypass_portwell_enable.sh K20bypass_portwell_enable.sh
+        echo "make link file in rc6.d"
+      fi
+      if [ ! -e /etc/rc0.d/K20bypass_portwell_enable.sh ]; then
+        # for shutdown
+        cd /etc/rc0.d
+        ln -s ../init.d/bypass_portwell_enable.sh K20bypass_portwell_enable.sh
+        echo "make link file in rc0.d"
+      fi
+  fi
 fi
