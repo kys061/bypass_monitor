@@ -11,7 +11,7 @@ if [ "$uname_r" = "$kernel_ver" ]; then
   bpcooper_ver=V1.21.3
   bpfiber_ver=V3.20.2
 else
-  bpcooper_ver=V1.13.1
+  bpcooper_ver=V1.13.0
   bpfiber_ver=V3.20.0
 fi
 
